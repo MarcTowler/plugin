@@ -1,0 +1,11 @@
+name: Scores
+author: Marc Towler
+version: 0.4
+
+main: uk.co.marctowler.Scores.core
+
+description: kill/death Scoreboards
+commands:
+   topkills:
+       usage: /<command>
+       description: Shows the top 10 kills
