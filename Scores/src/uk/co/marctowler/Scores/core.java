@@ -10,11 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +24,10 @@ public class core extends JavaPlugin implements Listener {
 
     File statsFile;
     FileConfiguration stats;
+    ScoreboardManager sbm = Bukkit.getScoreboardManager();
+    Scoreboard board = sbm.getNewScoreboard();
+
+
 
     @Override
     public void onEnable() {
@@ -40,6 +42,10 @@ public class core extends JavaPlugin implements Listener {
 
         getServer().getPluginManager().registerEvents(this, this);
 
+        Objective obj = board.registerNewObjective("Kill Stats", "playerKillCount");
+        obj.setDisplayName("Kill Count");
+        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+        Score score = obj.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Kills:"));
         showScoreboard();
     }
 
@@ -62,7 +68,9 @@ public class core extends JavaPlugin implements Listener {
     }*/
 
     public void addKill(String player) {
-        stats.set("Players."+player+".Kills", getKills(player)+1+"");
+        getLogger().info("Kills set to: " + (getKills(player) + 1));
+        stats.set("Players."+player+".Kills", getKills(player)+1);
+        board.getObjective(DisplaySlot.SIDEBAR).getScore(player).setScore(getKills(player));
         saveFile();
     }
 
@@ -91,8 +99,13 @@ public class core extends JavaPlugin implements Listener {
     }
 
     public void addDeath(String player) {
-        stats.set("Players."+player+".Deaths", getDeaths(player)+1+"");
+        stats.set("Players."+player+".Deaths", getDeaths(player)+1);
         saveFile();
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        showScoreboard();
     }
 
     @EventHandler
@@ -107,11 +120,8 @@ public class core extends JavaPlugin implements Listener {
     }
 
     public void showScoreboard() {
-        ScoreboardManager sbm = Bukkit.getScoreboardManager();
-        Scoreboard board = sbm.getNewScoreboard();
-        Objective obj = board.registerNewObjective("Kill Stats", "playerKillCount");
 
-        Score score = obj.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Kills:"));
+
 
         for(Player current : Bukkit.getOnlinePlayers()) {
             current.setScoreboard(board);
